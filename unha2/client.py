@@ -36,10 +36,10 @@ class ClientAPI:
         self._holder: AsyncHolder = holder
 
     def connect(self):
-        sock.send(self._ws(), build.misc.connect())
+        asyncio.ensure_future(sock.send(self._ws(), build.misc.connect()))
 
     def send_pong(self):
-        sock.send(self._ws(), build.misc.pong())
+        asyncio.ensure_future(sock.send(self._ws(), build.misc.pong()))
 
     def send_msg(self, room_id: str, text: str):
         asyncio.ensure_future(methods.send_message(
