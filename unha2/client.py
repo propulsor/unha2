@@ -83,6 +83,12 @@ class ClientAPI:
     async def get_subscriptions(self):
         return await methods.get_subscriptions(self._ws(), self._holder)
 
+    async def create_private_group(self,name,users):
+        return await methods.create_private_group(self._ws(),self._holder,name,users)
+
+    async def create_channel(self,name,users=None):
+        return await methods.create_channel(self._ws(),self._holder,name,users)
+
     def subscribe_user_all(self):
         for i in build.subs.ALLOWED_USER_SUBS:
             asyncio.ensure_future(subscriptions.notify_user(
@@ -109,6 +115,7 @@ class ClientAPI:
     def subscribe_to_rooms(self, room_list):
         for room in room_list:
             self.subscribe_to_room(room)
+
 
 class Client:
     def __init__(self, server, username, password):
@@ -325,4 +332,3 @@ class OverrideClient(Client):
 
     def on_topic_changed(self, msg):
         pass
-
