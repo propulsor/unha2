@@ -14,22 +14,30 @@ from unha2.holder import AsyncHolder
 
 
 class ClientData:
-    __slots__ = ['server', 'username', 'password', 'token', 'session',
-                 'user_id', 'token_expires']
+    __slots__ = [
+        "server",
+        "username",
+        "password",
+        "token",
+        "session",
+        "user_id",
+        "token_expires",
+    ]
+
     def __init__(self, server: str, username: str, password: str):
         self.server: str = server
         self.username: str = username
         self.password: str = password
-        self.token: str = ''
-        self.session: str = ''
-        self.user_id: str = ''
+        self.token: str = ""
+        self.session: str = ""
+        self.user_id: str = ""
         self.token_expires: Optional[datetime.datetime] = None
 
     def credentials(self):
         return (self.username, self.password)
 
-class ClientAPI:
 
+class ClientAPI:
     def __init__(self, data: ClientData, ws, holder: AsyncHolder):
         self._data: ClientData = data
         self._ws = ws
@@ -42,28 +50,22 @@ class ClientAPI:
         asyncio.ensure_future(sock.send(self._ws(), build.misc.pong()))
 
     def send_msg(self, room_id: str, text: str):
-        asyncio.ensure_future(methods.send_message(
-            self._ws(),
-            self._holder,
-            room_id,
-            text
-        ))
+        asyncio.ensure_future(
+            methods.send_message(self._ws(), self._holder, room_id, text)
+        )
 
     async def login(self):
         username, password = self._data.credentials()
-        res = await methods.login_sha256(
-            self._ws(),
-            self._holder,
-            username,
-            password,
-        )
-        self._data.token = res['token']
-        self._data.token_expires = res['expires']
-        self._data.user_id = res['user_id']
+        res = await methods.login_sha256(self._ws(), self._holder, username, password)
+        self._data.token = res["token"]
+        self._data.token_expires = res["expires"]
+        self._data.user_id = res["user_id"]
         return res
 
     async def join_room(self, room_id, join_code=None):
-        return await methods.join_room(self._ws(), self._holder, room_id, join_code=join_code)
+        return await methods.join_room(
+            self._ws(), self._holder, room_id, join_code=join_code
+        )
 
     async def open_room(self, room_id):
         return await methods.open_room(self._ws(), self._holder, room_id)
@@ -78,37 +80,40 @@ class ClientAPI:
         return await methods.get_room_id(self._ws(), self._holder, room_name)
 
     async def load_history(self, room_id, last_received, number, oldest_wanted=None):
-        return await methods.load_history(self._ws(), self._holder, room_id, last_received, number, oldest_wanted)
+        return await methods.load_history(
+            self._ws(), self._holder, room_id, last_received, number, oldest_wanted
+        )
 
     async def get_subscriptions(self):
         return await methods.get_subscriptions(self._ws(), self._holder)
 
+    async def create_private_group(self, name, users):
+        return await methods.create_private_group(self._ws(), self._holder, name, users)
+
+    async def create_channel(self, name, users=None):
+        return await methods.create_channel(self._ws(), self._holder, name, users)
+
     def subscribe_user_all(self):
         for i in build.subs.ALLOWED_USER_SUBS:
-            asyncio.ensure_future(subscriptions.notify_user(
-                self._ws(),
-                self._holder,
-                self._data.user_id,
-                i
-            ))
+            asyncio.ensure_future(
+                subscriptions.notify_user(
+                    self._ws(), self._holder, self._data.user_id, i
+                )
+            )
 
     def subscribe_to_room(self, room):
-        room_id = room['room_id']
-        asyncio.ensure_future(subscriptions.room_messages(
-            self._ws(),
-            self._holder,
-            room_id
-        ))
-        asyncio.ensure_future(subscriptions.notify_room(
-            self._ws(),
-            self._holder,
-            room_id,
-            'typing'
-        ))
+        room_id = room["room_id"]
+        asyncio.ensure_future(
+            subscriptions.room_messages(self._ws(), self._holder, room_id)
+        )
+        asyncio.ensure_future(
+            subscriptions.notify_room(self._ws(), self._holder, room_id, "typing")
+        )
 
     def subscribe_to_rooms(self, room_list):
         for room in room_list:
             self.subscribe_to_room(room)
+
 
 class Client:
     def __init__(self, server, username, password):
@@ -150,7 +155,7 @@ class Client:
             elif msgtype == RawMessageType.PING:
                 self.api.send_pong()
             elif msgtype == RawMessageType.CONNECTED:
-                self.session = parse.connected.parse(msg)['session']
+                self.session = parse.connected.parse(msg)["session"]
                 asyncio.ensure_future(self.do_login())
             elif msgtype == RawMessageType.RESULT:
                 self._holder.recv_result(msg)
@@ -173,20 +178,22 @@ class EventClient(Client):
     def __init__(self, server, username, password):
         Client.__init__(self, server, username, password)
         self.callbacks = defaultdict(list)
-        self.callbacks.update({
-            'added': [self.added],
-            'failed': [self.failed],
-            'changed': [self.changed],
-            'updated': [self.updated],
-            'removed': [self.removed],
-        })
+        self.callbacks.update(
+            {
+                "added": [self.added],
+                "failed": [self.failed],
+                "changed": [self.changed],
+                "updated": [self.updated],
+                "removed": [self.removed],
+            }
+        )
 
     async def do_login(self):
         result = await self.api.login()
-        self.event('logged_in', result)
+        self.event("logged_in", result)
 
     def do_connect(self):
-        self.event('connection_established')
+        self.event("connection_established")
         self.api.connect()
 
     def event(self, name: str, data=None):
@@ -211,40 +218,49 @@ class EventClient(Client):
 
     async def parse(self, msg: dict, msgtype: RawMessageType):
         if msgtype == RawMessageType.ADDED:
-            self.event('added', msg)
+            self.event("added", msg)
         elif msgtype == RawMessageType.CHANGED:
-            self.event('changed', msg)
+            self.event("changed", msg)
         elif msgtype == RawMessageType.UPDATED:
-            self.event('updated', msg)
+            self.event("updated", msg)
         elif msgtype == RawMessageType.REMOVED:
-            self.event('removed', msg)
+            self.event("removed", msg)
         elif msgtype == RawMessageType.FAILED:
-            self.event('failed', msg)
+            self.event("failed", msg)
 
-    def added(self, msg): pass
-    def removed(self, msg): pass
-    def updated(self, msg): pass
-    def failed(self, msg): pass
+    def added(self, msg):
+        pass
+
+    def removed(self, msg):
+        pass
+
+    def updated(self, msg):
+        pass
+
+    def failed(self, msg):
+        pass
 
     def changed(self, msg):
-        msg_type = ChangedStreamMessage(msg['collection'])
+        msg_type = ChangedStreamMessage(msg["collection"])
         if msg_type == ChangedStreamMessage.USERS:
-            self.event('users', msg)
+            self.event("users", msg)
         elif msg_type == ChangedStreamMessage.NOTIFY_USER:
-            self.event('notify_user', msg)
+            self.event("notify_user", msg)
         elif msg_type == ChangedStreamMessage.NOTIFY_ROOM:
-            self.event('notify_room', msg)
+            self.event("notify_room", msg)
         elif msg_type == ChangedStreamMessage.ROOM_MESSAGES:
-            self.event('room_message', msg)
+            self.event("room_message", msg)
 
     def room_message(self, msg):
         msg = parse.changed.room_message(msg)
-        self.event('room_message::' + msg['type'].name.lower(), msg)
+        self.event("room_message::" + msg["type"].name.lower(), msg)
+
 
 class OverrideClient(Client):
     """
     Simple client which connects to a server and logs in.
     """
+
     def __init__(self, server, username, password):
         Client.__init__(self, server, username, password)
 
@@ -261,7 +277,7 @@ class OverrideClient(Client):
             pass
 
     async def on_changed(self, msg):
-        msg_type = ChangedStreamMessage(msg['collection'])
+        msg_type = ChangedStreamMessage(msg["collection"])
         if msg_type == ChangedStreamMessage.USERS:
             await self.on_users(msg)
         elif msg_type == ChangedStreamMessage.NOTIFY_USER:
@@ -283,9 +299,9 @@ class OverrideClient(Client):
             RoomMessage.ROLE_REMOVED: self.on_role_removed,
             RoomMessage.TOPIC_CHANGED: self.on_topic_changed,
             RoomMessage.NORMAL_MESSAGE: self.on_normal_message,
-            RoomMessage.REMOVE: lambda x: None
+            RoomMessage.REMOVE: lambda x: None,
         }
-        return room_dispatch[msg['type']](msg)
+        return room_dispatch[msg["type"]](msg)
 
     async def on_users(self, msg):
         pass
@@ -325,4 +341,3 @@ class OverrideClient(Client):
 
     def on_topic_changed(self, msg):
         pass
-
