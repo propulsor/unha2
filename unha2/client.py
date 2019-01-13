@@ -93,6 +93,11 @@ class ClientAPI:
     async def create_channel(self, name, users=None):
         return await methods.create_channel(self._ws(), self._holder, name, users)
 
+    async def create_user(self, user_name, user_email, user_pass):
+        return await methods.register_user(
+            self.ws(), self._holder, user_name, user_email, user_pass
+        )
+
     def subscribe_user_all(self):
         for i in build.subs.ALLOWED_USER_SUBS:
             asyncio.ensure_future(
