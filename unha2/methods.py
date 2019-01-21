@@ -20,8 +20,10 @@ async def register_user(
     ws, holder: AsyncHolder, user_name: str, user_email: str, user_pass: str
 ) -> dict:
     uid = uuid()
+    print(uid, user_name, user_email, user_pass)
     payload = build.methods.register_user(uid, user_name, user_email, user_pass)
     result = await holder.send_method(ws, uid, payload)
+    print("result ", result)
     return parse.result.users(result["result"])
 
 
@@ -89,6 +91,13 @@ async def send_message(ws, holder: AsyncHolder, room_id: str, text: str) -> dict
     return result
 
 
+async def create_direct_msg(ws, holder: AsyncHolder, username: str) -> dict:
+    uid = uuid()
+    payload = build.methods.create_direct_message(uid, username)
+    result = await holder.send_method(ws, uid, payload)
+    return result
+
+
 async def get_room_id(ws, holder: AsyncHolder, room_name: str) -> dict:
     uid = uuid()
     payload = build.methods.get_room_id(uid, room_name)
@@ -142,6 +151,7 @@ async def create_private_group(
     uid = uuid()
     payload = build.methods.create_private_group(uid, name, users)
     result = await holder.send_method(ws, uid, payload)
+    print("result create private group : ", result)
     return result
 
 

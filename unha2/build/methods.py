@@ -65,7 +65,8 @@ def load_history(
     return msg
 
 
-def register_user(uid: str, use_name: str, user_email: str, user_pass: str) -> dict:
+def register_user(uid: str, user_name: str, user_email: str, user_pass: str) -> dict:
+    print("build methods ", uid, user_name, user_email, user_pass)
     msg = {
         "msg": "method",
         "method": "registerUser",
@@ -114,6 +115,16 @@ def send_text_message(uid: str, mid: str, room_id: str, text: str) -> dict:
         "method": "sendMessage",
         "id": uid,
         "params": [{"id": mid, "rid": room_id, "msg": text}],
+    }
+    return msg
+
+
+def create_direct_message(uid: str, username: str) -> dict:
+    msg = {
+        "msg": "method",
+        "method": "createDirectMessage",
+        "id": uid,
+        "params": [username],
     }
     return msg
 
