@@ -55,7 +55,9 @@ class ClientAPI:
         )
 
     def create_direct_msg(self, username: str):
-        asyncio.ensure_future(self._ws(), self._holder, username)
+        asyncio.ensure_future(
+            methods.create_direct_msg(self._ws(), self._holder, username)
+        )
 
     async def login(self):
         username, password = self._data.credentials()
