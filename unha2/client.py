@@ -54,11 +54,6 @@ class ClientAPI:
             methods.send_message(self._ws(), self._holder, room_id, text)
         )
 
-    def create_direct_msg(self, username: str):
-        asyncio.ensure_future(
-            methods.create_direct_msg(self._ws(), self._holder, username)
-        )
-
     async def login(self):
         username, password = self._data.credentials()
         res = await methods.login_sha256(self._ws(), self._holder, username, password)
@@ -103,6 +98,9 @@ class ClientAPI:
         return await methods.register_user(
             self._ws(), self._holder, user_name, user_email, user_pass
         )
+
+    async def create_direct_msg(self, username: str):
+        return await methods.create_direct_msg(self._ws(), self._holder, username)
 
     # async def get_users(self):
     #     return await methods.
