@@ -91,7 +91,7 @@ def _parse_subscription_update(result):
 
 
 def users(result):
-    print("#### result in getting users or creating user")
+    print("#### result in getting users or creating user : ", result)
     return {"total_number": result["total"], "users": result["records"]}
 
 
