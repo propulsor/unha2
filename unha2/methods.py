@@ -13,7 +13,7 @@ async def get_users(ws, holder: AsyncHolder, room_id: str) -> dict:
     uid = uuid()
     payload = build.methods.get_users(uid, room_id)
     result = await holder.send_method(ws, uid, payload)
-    return parse.result.users(result["users"])
+    return parse.result.users(result["result"])
 
 
 async def register_user(
@@ -23,7 +23,8 @@ async def register_user(
     print(uid, user_name, user_email, user_pass)
     payload = build.methods.register_user(uid, user_name, user_email, user_pass)
     result = await holder.send_method(ws, uid, payload)
-    return parse.result.users(result["users"])
+    print("##### result register users :", result)
+    return parse.result.users(result["result"])
 
 
 async def load_history(
