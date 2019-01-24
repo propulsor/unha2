@@ -23,7 +23,6 @@ async def register_user(
     print(uid, user_name, user_email, user_pass)
     payload = build.methods.register_user(uid, user_name, user_email, user_pass)
     result = await holder.send_method(ws, uid, payload)
-    print("result ", result)
     return parse.result.users(result["result"])
 
 
