@@ -71,7 +71,14 @@ def register_user(uid: str, user_name: str, user_email: str, user_pass: str) -> 
         "msg": "method",
         "method": "registerUser",
         "id": uid,
-        "params": [{"email": user_email, "pass": user_pass, "name": user_name}],
+        "params": [
+            {
+                "email": user_email,
+                "pass": user_pass,
+                "name": user_name,
+                "username": user_name,
+            }
+        ],
     }
     return msg
 
